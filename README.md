@@ -60,14 +60,6 @@ NSP_SERVICE_TAG=ContainerAppsManagement.AustraliaEast
 pip install -r requirements.txt
 ```
 
-### 4. Run Locally
-
-```bash
-python app.py
-```
-
-Visit `http://localhost:8080` in your browser.
-
 ## Deployment
 
 ### Local Docker Build
@@ -76,15 +68,6 @@ Visit `http://localhost:8080` in your browser.
 docker build \
   --build-arg LOG_ANALYTICS_WORKSPACE_ID="your-workspace-id" \
   -t azure-nsp-analyzer:latest .
-```
-
-### Run Docker Container Locally
-
-```bash
-docker run \
-  -e LOG_ANALYTICS_WORKSPACE_ID="your-workspace-id" \
-  -p 8080:8080 \
-  azure-nsp-analyzer:latest
 ```
 
 ### Deploy to Azure Container Apps
@@ -110,11 +93,11 @@ az containerapp create \
 
 ### `GET /`
 
-Returns the HTML dashboard with live Syslog records from the workspace.
+Returns the HTML dashboard with live records from the workspace.
 
 **Success Response (200)**:
 - Displays connected workspace status
-- Shows latest Syslog records with searchable interface
+- Shows latest records 
 - Displays executed Kusto query
 - Shows security architecture overview
 
@@ -124,19 +107,11 @@ Returns the HTML dashboard with live Syslog records from the workspace.
 - Displays detailed NSP error codes and messages
 - Provides security architecture diagram
 
-Example:
-```bash
-curl http://localhost:8080/
-```
 
 ### `GET /api/status`
 
 JSON API endpoint for programmatic access to status and monitoring data.
 
-**Request**:
-```bash
-curl http://localhost:8080/api/status
-```
 
 **Success Response (200)**:
 ```json
@@ -201,14 +176,6 @@ All configuration is managed through environment variables for secure, flexible 
 
 ### Environment Variable Setup
 
-**Development (local .env file)**:
-```bash
-# .env file (git-ignored)
-LOG_ANALYTICS_WORKSPACE_ID=your-actual-workspace-id
-WORKSPACE_NAME=law-nsp-poc
-NSP_SERVICE_TAG=ContainerAppsManagement.AustraliaEast
-```
-
 **Production (Container Apps)**:
 Set environment variables through Azure CLI or Azure Portal:
 ```bash
@@ -241,130 +208,6 @@ docker build \
 - **Health Checks**: Automatic via HEALTHCHECK directive
 - **Port**: 8080 (configurable via container app settings)
 
-## Troubleshooting
-
-### "LOG_ANALYTICS_WORKSPACE_ID environment variable is not set"
-
-**Solution**: Ensure the environment variable is defined before running:
-
-```bash
-# For local testing
-export LOG_ANALYTICS_WORKSPACE_ID="your-workspace-id"
-python app.py
-
-# Or using .env file
-cp .env.example .env
-# Edit .env with your workspace ID
-python app.py
-
-# For Docker
-docker run \
-  -e LOG_ANALYTICS_WORKSPACE_ID="your-workspace-id" \
-  -p 8080:8080 \
-  azure-nsp-analyzer:latest
-```
-
-### NSP Validation Failed
-
-**Symptoms**: `/api/status` returns 500 with `NspValidationFailedError`
-
-**Checks**:
-1. **Managed Identity Permissions**: The Container App's Managed Identity must have `Log Analytics Reader` role on the workspace
-   ```bash
-   az role assignment create \
-     --assignee "your-container-app-identity-principal-id" \
-     --role "Log Analytics Reader" \
-     --scope "/subscriptions/your-sub/resourceGroups/your-rg/providers/Microsoft.OperationalInsights/workspaces/your-workspace"
-   ```
-
-2. **NSP Configuration**: The workspace must be in a Network Security Perimeter with rules allowing access
-   ```bash
-   # Verify NSP is enabled
-   az network nsp rule list \
-     --nsp-name "your-nsp" \
-     --resource-group "your-rg"
-   ```
-
-3. **Service Tag Whitelist**: The Container App's service tag must be allowed in NSP access rules
-   - Check: NSP Profile → Access Rules → Inbound Traffic
-
-### Cannot Query Workspace
-
-**Symptoms**: Dashboard shows no data, or `/api/status` returns error
-
-**Checks**:
-1. **Workspace ID Format**: Must be a valid UUID (36 characters with hyphens)
-   ```bash
-   # Valid: 4cf1706d-4493-45ae-853e-3b87cf6ace86
-   # Invalid: law-nsp-poc (that's the name, not ID)
-   ```
-
-2. **RBAC Roles**: Verify Managed Identity permissions
-   ```bash
-   # Check current role assignments
-   az role assignment list \
-     --assignee "your-container-app-identity-principal-id"
-   ```
-
-3. **Network Connectivity**: Container App subnet must be able to reach Log Analytics endpoint
-   - Check: Container App → Networking → VNet integration
-   - Verify: Network security groups allow outbound HTTPS (443)
-
-### Logs Not Appearing in Dashboard
-
-**Causes**:
-- Workspace has no Syslog data in the last 24 hours
-- Query timeout (try shortening the time range)
-- Log Analytics workspace is empty
-
-**Debug**:
-```bash
-# Test query directly via KQL
-az monitor log-analytics query \
-  --workspace "your-workspace-id" \
-  --analytics-query "Syslog | count"
-```
-
-### Container App Health Checks Failing
-
-**Symptoms**: Container constantly restarting
-
-**Causes**:
-1. Environment variable not set at deployment time
-2. Managed Identity missing or misconfigured
-3. Workspace ID invalid
-
-**Fix**:
-```bash
-# Check logs
-az containerapp logs show \
-  --name azure-nsp-analyzer \
-  --resource-group your-rg
-
-# Verify environment variables
-az containerapp show \
-  --name azure-nsp-analyzer \
-  --resource-group your-rg \
-  --query "properties.template.containers[0].env"
-```
-
-## Security Considerations
-
-### Do's ✅
-- **Use Managed Identity** for all Azure authentication (never hardcode credentials)
-- **Restrict RBAC**: Give Managed Identity only `Log Analytics Reader` role, nothing more
-- **Use .env.example**: Commit only the template, never commit `.env`
-- **Use NSP Rules**: Whitelist only necessary service tags and subscriptions
-- **Use Environment Variables**: All sensitive config goes through env vars, never hardcoded
-- **Enable Health Checks**: Allows Container Apps to auto-restart unhealthy instances
-
-### Don'ts ❌
-- **Never commit .env**: It contains your workspace ID and other sensitive data
-- **Never hardcode credentials**: Use Managed Identity instead
-- **Never grant overpermissive roles**: Avoid Owner/Contributor roles
-- **Never disable NSP**: It's the security mechanism this tool demonstrates
-- **Never share workspace IDs**: Treat them as sensitive data
-
 ## Project Structure
 
 ```
@@ -391,7 +234,7 @@ az containerapp show \
 - Works seamlessly in Azure Container Apps
 
 ### Interactive Dashboard
-- Search Syslog records in real-time
+- Search records in real-time
 - View record details in modal dialog
 - See Kusto query used for transparency
 - Visual architecture diagram showing request flow
