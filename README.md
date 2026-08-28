@@ -112,46 +112,6 @@ Returns the HTML dashboard with live records from the workspace.
 
 JSON API endpoint for programmatic access to status and monitoring data.
 
-
-**Success Response (200)**:
-```json
-{
-  "status": "success",
-  "identity": "Managed Identity",
-  "workspace": "4cf1706d-4493-45ae-853e-3b87cf6ace86",
-  "query": "Syslog | where TimeGenerated > ago(24h) | order by TimeGenerated desc | take 5",
-  "rowCount": 5,
-  "tableCount": 1,
-  "sampleRecords": [
-    {
-      "TimeGenerated": "2024-01-15T10:30:00Z",
-      "Computer": "vm-01",
-      "ProcessName": "sshd",
-      "SeverityLevel": "info",
-      "SyslogMessage": "Connection closed"
-    }
-  ],
-  "timestamp": "2024-01-15T10:30:00+00:00"
-}
-```
-
-**Error Response (500)**:
-```json
-{
-  "status": "failed",
-  "identity": "Managed Identity",
-  "workspace": "4cf1706d-4493-45ae-853e-3b87cf6ace86",
-  "exceptionType": "HttpResponseError",
-  "error": "Access to workspace 'law-nsp-poc' from '20.11.107.220' is denied by Network Security Perimeter",
-  "nspError": {
-    "code": "NspValidationFailedError",
-    "message": "Access was denied by Network Security Perimeter validation."
-  },
-  "sourceIP": "20.11.107.220",
-  "timestamp": "2024-01-15T10:30:00+00:00"
-}
-```
-
 ### `GET /health`
 
 Health check endpoint for Azure Container Apps monitoring and auto-restart functionality.
