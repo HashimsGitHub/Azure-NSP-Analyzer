@@ -1,4 +1,12 @@
+# Azure-NSP-Analyzer Dependencies
+# Python 3.8+
+
+# Web Framework
 Flask==3.0.0
+
+# Azure Libraries
 azure-identity==1.14.0
 azure-monitor-query==1.2.0
+
+# WSGI Server (used by Flask)
 Werkzeug==3.0.1
