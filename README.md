@@ -116,13 +116,6 @@ JSON API endpoint for programmatic access to status and monitoring data.
 
 Health check endpoint for Azure Container Apps monitoring and auto-restart functionality.
 
-**Response (200)**:
-```json
-{
-  "status": "healthy",
-  "workspace": "4cf1706d-4493-45ae-853e-3b87cf6ace86"
-}
-```
 
 ## Configuration
 
