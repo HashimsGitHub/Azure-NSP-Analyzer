@@ -2,6 +2,11 @@
 
 A Flask-based Azure Container App that queries Log Analytics workspaces through Network Security Perimeter (NSP) validation. This tool demonstrates secure access patterns and NSP security architecture for Azure resources.
 
+<img width="634" height="399" alt="image" src="https://github.com/user-attachments/assets/b4fd4c02-4622-4d28-b0bc-bbfa95e8019d" />
+
+<img width="632" height="492" alt="image" src="https://github.com/user-attachments/assets/daaf12b7-55d3-4627-872e-8eab6d2fee14" />
+
+
 ## Features
 
 - **Network Security Perimeter Integration**: Demonstrates secure access to protected Log Analytics workspaces
